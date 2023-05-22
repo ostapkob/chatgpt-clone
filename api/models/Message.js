@@ -1,8 +1,9 @@
 const Message = require('./schema/messageSchema');
+const MessageCopy = require('./schema/messageSchemaCopy');
 
 module.exports = {
   Message,
-
+  MessageCopy,
   async saveMessage({
     messageId,
     newMessageId,
@@ -17,6 +18,23 @@ module.exports = {
   }) {
     try {
       // may also need to update the conversation here
+
+      await MessageCopy.findOneAndUpdate(
+        { messageId },
+        {
+          messageId: newMessageId || messageId,
+          conversationId,
+          parentMessageId,
+          sender,
+          text,
+          isCreatedByUser,
+          error,
+          unfinished,
+          cancelled
+        },
+        { upsert: true, new: true }
+      );
+
       await Message.findOneAndUpdate(
         { messageId },
         {

@@ -1,5 +1,6 @@
 // const { Conversation } = require('./plugins');
 const Conversation = require('./schema/convoSchema');
+const ConversationCopy = require('./schema/convoSchemaCopy');
 const { getMessages, deleteMessages } = require('./Message');
 
 const getConvo = async (user, conversationId) => {
@@ -13,6 +14,7 @@ const getConvo = async (user, conversationId) => {
 
 module.exports = {
   Conversation,
+  ConversationCopy,
   saveConvo: async (user, { conversationId, newConversationId, ...convo }) => {
     try {
       const messages = await getMessages({ conversationId });
@@ -20,11 +22,17 @@ module.exports = {
       if (newConversationId) {
         update.conversationId = newConversationId;
       }
+      const r = await ConversationCopy.findOneAndUpdate({ conversationId: conversationId, user }, update, {
+        new: true,
+        upsert: true
+      }).exec();
+      console.log('save', r)
 
       return await Conversation.findOneAndUpdate({ conversationId: conversationId, user }, update, {
         new: true,
         upsert: true
       }).exec();
+
     } catch (error) {
       console.log(error);
       return { message: 'Error saving conversation' };
